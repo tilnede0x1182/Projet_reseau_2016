@@ -63,4 +63,3 @@ javac *.java && java Main
 
 - **Variable `boolean affiche_messages`**
   Permet d'afficher les messages transmis via UDP sur l'anneau.
-```
