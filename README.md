@@ -53,12 +53,14 @@
 ## Compilation et exécution
 
 ```bash
-Test :
-     javac *.java && java Main
+javac *.java && java Main
+```
 
-Configuration (dans le fichier Entite.java) :
+### Configuration (dans le fichier `Entite.java`)
 
-Variable boolean debug :
-	 Permet d'afficher les affichages  relatifs aux connections.
-Variable boolean affiche_messages :
-	 Permet d'afficher les affichages messages relatifs aux messages transmits par UDP sur l'anneau.
+- **Variable `boolean debug`**
+  Permet d'afficher les messages relatifs aux connexions réseau.
+
+- **Variable `boolean affiche_messages`**
+  Permet d'afficher les messages transmis via UDP sur l'anneau.
+```
