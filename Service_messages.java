@@ -12,6 +12,7 @@ class Service_messages implements Runnable {
 		this.entite = entite;
 		this.debug = entite.debug;
 		this.affiche_messages = entite.affiche_messages;
+		this.utile = entite.utile;
 	}
 
 	public void run () {
@@ -21,16 +22,20 @@ class Service_messages implements Runnable {
 		boolean ok = true;
 		int i=1;
 		do {
-			try {
+			try (DatagramSocket dso = new DatagramSocket(port)) {
 				aff_debug(""+this+" : connection à l'adresse ip "+ip+" et au port "+port+", essai n°"+i+".");
-				DatagramSocket dso = new DatagramSocket(port);
 				byte [] data = new byte[1024];
 				DatagramPacket paquet = new DatagramPacket(data,data.length);
 				while (true) {
 					dso.receive(paquet);
 					message = new String(paquet.getData(), 0, paquet.getLength());
-					aff_message(""+this+" : \nMessage reçu : "+message);
 					InetSocketAddress ia = (InetSocketAddress)paquet.getSocketAddress();
+					String sourceIp = ia.getAddress().getHostAddress();
+					if (!entite.origineAutorisee(sourceIp)) {
+						aff_debug(""+this+" : message ignoré, origine non autorisée "+sourceIp);
+						continue;
+					}
+					aff_message(""+this+" : \nMessage reçu : "+message);
 					affnn_message(""+this+" : Reçu de la machine "+ia.getHostName());
 					aff_message(", depuis le port "+ia.getPort()+".");
 					entite.renvoie_message(message, false);

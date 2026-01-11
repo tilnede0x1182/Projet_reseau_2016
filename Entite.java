@@ -8,11 +8,16 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 class Entite {
 	Utile utile;
 	static Utile utile_static;
+	static final int PORT_MIN = 1025;
+	static final int PORT_MAX = 65535;
 	boolean debug = true;
 	/**
 		N'affiche que les messages relatifs à l'envoie et la réception de messages
@@ -46,10 +51,32 @@ class Entite {
 
 	BufferedReader br;
 
-	HashSet<String> messages_recus;
-	HashSet<String> applications_installees;
+	Set<String> messages_recus;
+	Set<String> applications_installees;
 
 	Thread service_test = null;
+
+	/** Controleur pour interface web **/
+	AnneauController anneauController = null;
+
+	/**
+	 * Definit le controleur d'anneau pour les notifications web.
+	 * @param controller Controleur
+	 */
+	public void setAnneauController(AnneauController controller) {
+		this.anneauController = controller;
+	}
+
+	/**
+	 * Notifie le controleur d'un message.
+	 * @param type Type de message
+	 * @param content Contenu
+	 */
+	private void notifyController(String type, String content) {
+		if (anneauController != null) {
+			anneauController.notifyMessage(this, type, content);
+		}
+	}
 
 	public Entite (int port_TCP, String ip_machine_suivante) {
 		utile_constructeur(port_TCP, ip_machine_suivante);
@@ -83,7 +110,7 @@ class Entite {
 	public Entite (String ip_diff, int port_diff, Thread insertion_simple) {
 		entite_double = true;
 		utile_constructeur_id_port_deja_choisis("");
-		this.port_reception_UDP = utile.genere_numero_de_port (0, 9999, utile.getPorts_deja_choisis());
+		this.port_reception_UDP = utile.genere_numero_de_port (PORT_MIN, PORT_MAX, utile.getPorts_deja_choisis());
 		aff_debug(this+" : port_reception_UDP : "+port_reception_UDP);
 		this.port_d_ecoute_UDP_machine_suivante = port_reception_UDP;
 		this.port_TCP = port_TCP;
@@ -104,8 +131,8 @@ class Entite {
 			aff_debug("Réinitialisation de ports_deja_choisis.");
 			utile.setPorts_deja_choisis(new HashSet<Integer>());
 		}
-		messages_recus = new HashSet<String>();
-		applications_installees = new HashSet<String>();
+		messages_recus = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+		applications_installees = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 		boolean ok_id = false;
 		if (id!=null)
 			if (!id.isEmpty())
@@ -119,8 +146,18 @@ class Entite {
 			adresse_ip_reception_UDP = InetAddress.getLocalHost().getHostAddress();
 		}
 		catch (UnknownHostException e) {
-			e.printStackTrace();
+			adresse_ip_reception_UDP = "127.0.0.1";
+			aff_debug("Impossible de résoudre l'adresse locale, utilisation de 127.0.0.1");
 		}
+	}
+
+	public boolean origineAutorisee(String ip) {
+		if (ip==null) return false;
+		String normalisee = utile_static.complete_ip(ip);
+		if (normalisee.equals(adresse_ip_reception_UDP)) return true;
+		if (ip_machine_suivante!=null && normalisee.equals(utile_static.complete_ip(ip_machine_suivante))) return true;
+		if (adresse_panne_reseau_ipv4_multidifusion!=null && normalisee.equals(utile_static.complete_ip(adresse_panne_reseau_ipv4_multidifusion))) return true;
+		return false;
 	}
 
 	public void utile_constructeur (int port_TCP, String ip_machine_suivante) {
@@ -129,13 +166,13 @@ class Entite {
 
 	public void utile_constructeur (int port_TCP, String ip_machine_suivante, String id) {
 		utile_constructeur_id_port_deja_choisis(id);
-		this.port_reception_UDP = utile.genere_numero_de_port (0, 9999, utile.getPorts_deja_choisis());
+		this.port_reception_UDP = utile.genere_numero_de_port (PORT_MIN, PORT_MAX, utile.getPorts_deja_choisis());
 		aff_debug(this+" : port_reception_UDP : "+port_reception_UDP);
 		this.port_d_ecoute_UDP_machine_suivante = port_reception_UDP;
 		this.port_TCP = port_TCP;
 		this.ip_machine_suivante = utile_static.complete_ip(ip_machine_suivante);
 		adresse_panne_reseau_ipv4_multidifusion = utile.genere_adresse_ipv4_multidiffusion();
-		port_de_multidifusion = utile.genere_numero_de_port (0, 9999, utile.getPorts_deja_choisis());
+		port_de_multidifusion = utile.genere_numero_de_port (PORT_MIN, PORT_MAX, utile.getPorts_deja_choisis());
 
 		insertion_simple = new Thread (new Service_dinsertion(this));
 		insertion_simple.start();
@@ -298,6 +335,7 @@ class Entite {
 			aff_debug(""+this+" : Envoi du packet");
 			dso.send(paquet);
 			aff_debug(""+this+" : Packet envoyé.");
+			notifyController("SEND", message.getMessage());
 			return true;
 		}
 		catch(Exception e) {
