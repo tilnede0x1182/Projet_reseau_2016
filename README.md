@@ -109,7 +109,44 @@ Ce projet est un **projet academique sur les systemes distribues** - specifiquem
 ## Compilation et exécution
 
 ```bash
-javac *.java && java Main
+make run
+```
+
+Ou manuellement :
+```bash
+make compile   # Compile dans build/
+make run       # Compile + execute
+make clean     # Supprime build/
+```
+
+---
+
+## Interface Web
+
+Une interface web permet de visualiser et controler l anneau en temps reel.
+
+### Lancement
+
+```bash
+make run
+```
+
+Puis ouvrir : http://localhost:6111
+
+### Fonctionnalites
+
+| Fonction | Description |
+|----------|-------------|
+| Visualisation | Graphe circulaire des entites connectees |
+| Messages | Log temps reel des messages circulants |
+| Controles | Ajouter/retirer entites, envoyer WHOS/TEST/DOWN |
+
+### Architecture
+
+```
+Navigateur <-- WebSocket --> Serveur Java (port 6111)
+                                  |
+                             Anneau UDP/TCP
 ```
 
 ### Configuration (dans le fichier `Entite.java`)
