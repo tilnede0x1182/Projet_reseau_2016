@@ -12,6 +12,7 @@ class Service_messages_multidiffusion implements Runnable {
 		this.entite = entite;
 		this.debug = entite.debug;
 		this.affiche_messages = entite.affiche_messages;
+		this.utile = entite.utile;
 	}
 
 	public void run () {
@@ -21,15 +22,21 @@ class Service_messages_multidiffusion implements Runnable {
 		boolean ok=true;
 		int i=1;
 		do {
-			try {
+			try (MulticastSocket mso = new MulticastSocket(port)) {
 				aff_debug(""+this+" : connection à l'adresse ip "+ip+" et au port "+port+", essai n°"+i+".");
-				MulticastSocket mso = new MulticastSocket(port);
-				mso.joinGroup(InetAddress.getByName(ip));
+				InetAddress group = InetAddress.getByName(ip);
+				mso.joinGroup(group);
 				byte [] data = new byte[100];
 				DatagramPacket paquet = new DatagramPacket(data,data.length);
 				while(true) {
 					mso.receive(paquet);
 					message = new String(paquet.getData(), 0, paquet.getLength());
+					InetAddress source = paquet.getAddress();
+					String sourceIp = (source!=null)?source.getHostAddress():null;
+					if (!entite.origineAutorisee(sourceIp)) {
+						aff_debug(""+this+" : message multidiffusion ignoré, origine "+sourceIp);
+						continue;
+					}
 					aff_message(""+this+" : \nMessage reçu : "+message);
 					entite.renvoie_message(message, true);
 				}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systeme d'Entites en Anneau</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Systeme d'Entites Communicantes en Anneau</h1>
+        <div id="connection-status" class="disconnected">Deconnecte</div>
+    </header>
+
+    <main>
+        <section id="anneau-section">
+            <h2>Visualisation de l'Anneau</h2>
+            <canvas id="anneau-canvas" width="500" height="500"></canvas>
+        </section>
+
+        <section id="controls-section">
+            <h2>Controles</h2>
+            <div class="button-group">
+                <button id="btn-add" onclick="addEntite()">+ Ajouter Entite</button>
+                <button id="btn-remove" onclick="removeEntite()">- Retirer Entite</button>
+            </div>
+            <div class="button-group">
+                <button id="btn-whos" onclick="sendCommand('sendWHOS')">Envoyer WHOS</button>
+                <button id="btn-test" onclick="sendCommand('sendTEST')">Envoyer TEST</button>
+                <button id="btn-down" onclick="sendCommand('sendDOWN')" class="danger">DOWN</button>
+            </div>
+            <div class="input-group">
+                <input type="text" id="appl-message" placeholder="Message APPL...">
+                <button onclick="sendAppl()">Envoyer APPL</button>
+            </div>
+        </section>
+
+        <section id="entites-section">
+            <h2>Entites (<span id="entites-count">0</span>)</h2>
+            <ul id="entites-list"></ul>
+        </section>
+
+        <section id="log-section">
+            <h2>Messages</h2>
+            <div id="log-container"></div>
+            <button onclick="clearLog()">Effacer</button>
+        </section>
+    </main>
+
+    <script src="client.js"></script>
+</body>
+</html>
