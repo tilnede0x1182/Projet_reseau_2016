@@ -2,9 +2,27 @@
 
 ## Concept et objectif
 
-Ce projet est un **projet academique sur les systemes distribues** - specifiquement un **reseau en anneau** (Token Ring).
+Implémentation d’un réseau en anneau en Java.
 
-**Ce n'est PAS une messagerie utilisateur.** C'est une infrastructure de communication distribuee.
+L’architecture repose sur une topologie circulaire logique : chaque nœud maintient uniquement la référence de son successeur. Les messages sont relayés séquentiellement de proche en proche jusqu’à revenir à l’émetteur, ce qui garantit la continuité du cycle. Les échanges applicatifs utilisent UDP pour la transmission ; l’intégration d’un nouveau nœud repose sur TCP afin d’assurer une phase d’insertion fiable et contrôlée.
+
+Le protocole applicatif est explicitement défini et typé :
+- APPL : transport de données applicatives.
+- WHOS : requête d'identification des participants.
+- MEMB : réponse à WHOS avec identifiant et adresse réseau.
+- TEST : vérification de la cohérence de l'anneau.
+- GBYE : notification de retrait volontaire.
+- EYBG : accusé de réception du retrait.
+- DOWN : arrêt global du réseau via multidiffusion.
+
+Fonctionnalités assurées :
+- insertion dynamique sans interruption globale du cycle,
+- retrait propre avec mise à jour des voisins directs,
+- arrêt coordonné du réseau par message de multidiffusion.
+
+Le projet met en œuvre la programmation réseau bas niveau (sockets UDP, TCP, multidiffusion IP), la gestion concurrente par threads dédiés (écoute, supervision, insertion) et la conception d’un protocole distribué structuré avec identifiants uniques.
+
+Objectif : maîtriser la mise en œuvre concrète d’une communication distribuée et la gestion de cohérence dans une architecture en boucle sans autorité centrale.
 
 ### Principe de l'anneau
 
@@ -18,14 +36,14 @@ Ce projet est un **projet academique sur les systemes distribues** - specifiquem
 - Les entites forment une boucle : E1 → E2 → E3 → E4 → E1
 - Un message fait le tour complet de l'anneau (chaque entite le relaie)
 - Une nouvelle entite peut s'inserer entre deux existantes
-- Si un noeud tombe, la multidiffusion permet de reconfigurer l'anneau
+- La multidiffusion permet d'arreter l'anneau (DOWN)
 
 ### Cas d'usage theoriques
 
 | Cas | Description |
 |-----|-------------|
 | Communication distribuee | Plusieurs machines echangent des donnees |
-| Tolerance aux pannes | Si un noeud tombe, l'anneau se reconfigure |
+| Arret coordonne | La multidiffusion permet d'arreter tout le reseau |
 | Base pour microservices | Chaque entite = un service independant |
 
 ### Etat du projet
@@ -110,27 +128,27 @@ Ce projet est un **projet academique sur les systemes distribues** - specifiquem
 ## Compilation et exécution
 
 ```bash
-make run
+make compile_run   # Compile et execute
 ```
 
-Ou manuellement :
+Autres commandes :
 ```bash
 make compile       # Compile dans build/
-make run           # Execute (sans compiler)
-make compile_run   # Compile + execute
-make clean         # Supprime build/
+make run           # Execute (necessite compilation prealable)
+make javadoc       # Genere la documentation
+make clean         # Supprime build/ et javadoc/
 ```
 
 ---
 
 ## Interface Web
 
-Une interface web permet de visualiser et controler l anneau en temps reel.
+Une interface web permet de visualiser et controler l'anneau en temps reel.
 
 ### Lancement
 
 ```bash
-make run
+make compile_run
 ```
 
 Puis ouvrir : http://localhost:6111
