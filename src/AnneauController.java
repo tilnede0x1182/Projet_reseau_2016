@@ -112,22 +112,25 @@ class AnneauController {
             newEntite.setAnneauController(this);
             entites.add(newEntite);
             broadcastLog("Entite " + newEntite.identifiant + " creee (premiere entite)");
+            broadcastState();
         } else {
-            Entite firstEntite = entites.get(0);
-            Entite newEntite = new Entite("E" + (entites.size() + 1), nextPort++, "127.0.0.1");
+            final Entite firstEntite = entites.get(0);
+            final Entite newEntite = new Entite("E" + (entites.size() + 1), nextPort++, "127.0.0.1");
             newEntite.setAnneauController(this);
             entites.add(newEntite);
+            broadcastState();
+            broadcastLog("Insertion de " + newEntite.identifiant + " en cours...");
 
-            boolean inserted = newEntite.insertion("127.0.0.1", firstEntite.port_TCP);
-
-            if (inserted) {
-                broadcastLog("Entite " + newEntite.identifiant + " inseree dans l'anneau");
-            } else {
-                broadcastLog("Echec insertion entite " + newEntite.identifiant);
-            }
+            new Thread(() -> {
+                boolean inserted = newEntite.insertion("127.0.0.1", firstEntite.port_TCP);
+                if (inserted) {
+                    broadcastLog("Entite " + newEntite.identifiant + " inseree dans l'anneau");
+                } else {
+                    broadcastLog("Echec insertion entite " + newEntite.identifiant);
+                }
+                broadcastState();
+            }).start();
         }
-
-        broadcastState();
     }
 
     /**

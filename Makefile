@@ -2,8 +2,10 @@ compile:
 	@mkdir -p build
 	javac -d build src/*.java
 
-run: compile
+run:
 	java -cp build Main
+
+compile_run: compile run
 
 javadoc:
 	@mkdir -p javadoc

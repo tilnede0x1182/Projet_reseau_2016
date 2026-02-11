@@ -33,7 +33,8 @@ Ce projet est un **projet academique sur les systemes distribues** - specifiquem
 | Composant | Statut |
 |-----------|--------|
 | Moteur reseau | Fonctionnel |
-| Interface utilisateur | Aucune (Main.java de test) |
+| Interface web | Fonctionnelle (visualisation + controles) |
+| CLI | Fonctionnelle (Main.java) |
 | Applications | Squelette seulement |
 
 ---
@@ -114,9 +115,10 @@ make run
 
 Ou manuellement :
 ```bash
-make compile   # Compile dans build/
-make run       # Compile + execute
-make clean     # Supprime build/
+make compile       # Compile dans build/
+make run           # Execute (sans compiler)
+make compile_run   # Compile + execute
+make clean         # Supprime build/
 ```
 
 ---

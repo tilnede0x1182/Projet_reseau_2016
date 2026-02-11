@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
     canvas = document.getElementById('anneau-canvas');
     ctx = canvas.getContext('2d');
 
+    document.getElementById('appl-message').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            sendAppl();
+        }
+    });
+
     connect();
     drawAnneau();
 });
